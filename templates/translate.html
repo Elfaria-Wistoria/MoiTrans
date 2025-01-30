@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="min-h-screen bg-gradient-to-br from-blue-50 to-white py-20">
+    <div class="container mx-auto px-4">
+        <!-- Heading -->
+        <div class="text-center mb-12" data-aos="fade-up">
+            <h1 class="text-4xl md:text-5xl font-bold text-blue-600 mb-4">Penerjemah Moi - Indonesia</h1>
+            <p class="text-gray-600 text-lg">Terjemahkan dengan mudah dan akurat</p>
+        </div>
+
+        <!-- Main Translation Card -->
+        <div class="max-w-5xl mx-auto">
+            <div class="bg-white rounded-3xl shadow-2xl p-6 md:p-8" data-aos="fade-up" data-aos-delay="100">
+                <!-- Language Toggle -->
+                <div class="flex justify-center mb-8 relative">
+                    <div class="bg-blue-50 p-1 rounded-full inline-flex relative">
+                        <div id="toggleSlider" class="absolute h-full w-1/2 bg-blue-500 rounded-full transition-transform duration-300"></div>
+                        <button id="moiToIndo" class="px-6 py-3 rounded-full relative z-10 font-medium transition-colors duration-300" onclick="setDirection('moi_to_indo')">
+                            Moi → Indonesia
+                        </button>
+                        <button id="indoToMoi" class="px-6 py-3 rounded-full relative z-10 font-medium transition-colors duration-300" onclick="setDirection('indo_to_moi')">
+                            Indonesia → Moi
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Translation Area with Side-by-Side Layout -->
+                <div class="flex flex-col md:flex-row gap-6 relative">
+                    <!-- Source Text -->
+                    <div class="flex-1 translation-box group" data-aos="fade-right" data-aos-delay="200">
+                        <div class="bg-white rounded-2xl border-2 border-blue-100 transition-all duration-300 group-hover:border-blue-300 group-hover:shadow-lg">
+                            <div class="flex justify-between items-center p-4 border-b border-blue-100">
+                                <label id="sourceLabel" class="text-sm font-medium text-blue-600">Bahasa Moi</label>
+                                <div class="flex space-x-2">
+                                    <button onclick="clearText('sourceText')" class="text-gray-400 hover:text-blue-600 transition-colors">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <button onclick="copyText('sourceText')" class="text-gray-400 hover:text-blue-600 transition-colors">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <textarea id="sourceText" rows="6" class="w-full p-4 focus:outline-none resize-none rounded-b-2xl" placeholder="Ketik atau tempel teks di sini..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Center Action Area -->
+                    <div class="flex items-center justify-center md:flex-col gap-4">
+                        <div class="hidden md:block translate-arrow mb-4">
+                            <i class="fas fa-exchange-alt text-3xl text-blue-500"></i>
+                        </div>
+                        <button id="translateBtn" class="bg-blue-600 text-white px-6 py-3 rounded-full hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 flex items-center gap-2 shadow-lg">
+                            <span>Terjemahkan</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- Translated Text -->
+                    <div class="flex-1 translation-box group" data-aos="fade-left" data-aos-delay="300">
+                        <div class="bg-blue-50 rounded-2xl border-2 border-blue-100 transition-all duration-300">
+                            <div class="flex justify-between items-center p-4 border-b border-blue-100">
+                                <label id="targetLabel" class="text-sm font-medium text-blue-600">Bahasa Indonesia</label>
+                                <button onclick="copyText('translatedText')" class="text-gray-400 hover:text-blue-600 transition-colors">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                            <textarea id="translatedText" rows="6" class="w-full p-4 bg-blue-50 focus:outline-none resize-none rounded-b-2xl" readonly></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Translation History -->
+            <div class="mt-12" data-aos="fade-up" data-aos-delay="500">
+                <h3 class="text-2xl font-bold text-blue-600 mb-6">Riwayat Terjemahan</h3>
+                <div id="historyList" class="grid grid-cols-1 gap-4">
+                    <!-- History items will be added here dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-8 rounded-2xl flex flex-col items-center">
+            <div class="loading-spinner mb-4"></div>
+            <p class="text-blue-600 font-medium">Menerjemahkan...</p>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+let currentDirection = 'moi_to_indo';
+const history = [];
+
+function setDirection(direction) {
+    currentDirection = direction;
+    const toggleSlider = document.getElementById('toggleSlider');
+    const moiToIndo = document.getElementById('moiToIndo');
+    const indoToMoi = document.getElementById('indoToMoi');
+    const sourceLabel = document.getElementById('sourceLabel');
+    const targetLabel = document.getElementById('targetLabel');
+
+    if (direction === 'indo_to_moi') {
+        toggleSlider.style.transform = 'translateX(100%)';
+        moiToIndo.classList.remove('text-white');
+        indoToMoi.classList.add('text-white');
+        sourceLabel.textContent = 'Bahasa Indonesia';
+        targetLabel.textContent = 'Bahasa Moi';
+    } else {
+        toggleSlider.style.transform = 'translateX(0)';
+        moiToIndo.classList.add('text-white');
+        indoToMoi.classList.remove('text-white');
+        sourceLabel.textContent = 'Bahasa Moi';
+        targetLabel.textContent = 'Bahasa Indonesia';
+    }
+}
+
+function clearText(elementId) {
+    document.getElementById(elementId).value = '';
+}
+
+function copyText(elementId) {
+    const element = document.getElementById(elementId);
+    element.select();
+    document.execCommand('copy');
+    
+    // Show copy notification
+    const notification = document.createElement('div');
+    notification.className = 'fixed bottom-4 right-4 bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg transform transition-all duration-300';
+    notification.textContent = 'Teks berhasil disalin!';
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 2000);
+}
+
+async function translate() {
+    const sourceText = document.getElementById('sourceText').value.trim();
+    if (!sourceText) return;
+
+    // Show loading
+    document.getElementById('loadingOverlay').classList.remove('hidden');
+    
+    try {
+        const response = await fetch('/api/translate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `text=${encodeURIComponent(sourceText)}&direction=${currentDirection}`
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        document.getElementById('translatedText').value = data.translation;
+        
+        // Add to history
+        addToHistory(sourceText, data.translation);
+        
+    } catch (error) {
+        alert('Error: ' + error.message);
+    } finally {
+        // Hide loading
+        document.getElementById('loadingOverlay').classList.add('hidden');
+    }
+}
+
+function addToHistory(source, translation) {
+    const historyItem = {
+        source,
+        translation,
+        direction: currentDirection,
+        timestamp: new Date()
+    };
+    
+    history.unshift(historyItem);
+    if (history.length > 5) history.pop();
+    
+    updateHistoryUI();
+}
+
+function updateHistoryUI() {
+    const historyList = document.getElementById('historyList');
+    historyList.innerHTML = '';
+    
+    history.forEach((item, index) => {
+        const element = document.createElement('div');
+        element.className = 'bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300';
+        element.innerHTML = `
+            <div class="flex justify-between items-start mb-4">
+                <span class="text-sm text-gray-500">${item.timestamp.toLocaleTimeString()}</span>
+                <span class="text-sm font-medium text-blue-600">${item.direction === 'moi_to_indo' ? 'Moi → Indonesia' : 'Indonesia → Moi'}</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm text-gray-500 mb-1">Teks Sumber:</p>
+                    <p class="text-gray-800">${item.source}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 mb-1">Terjemahan:</p>
+                    <p class="text-gray-800">${item.translation}</p>
+                </div>
+            </div>
+        `;
+        historyList.appendChild(element);
+    });
+}
+
+// Event Listeners
+document.getElementById('translateBtn').addEventListener('click', translate);
+
+// Initialize direction
+setDirection('moi_to_indo');
+</script>
+
+<style>
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.translate-arrow {
+    animation: pulse 2s infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+</style>
+{% endblock %}
