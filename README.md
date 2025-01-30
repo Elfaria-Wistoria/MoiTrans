@@ -27,7 +27,7 @@ This project aims to:
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/moi-translator.git
+   git clone https://github.com/Elfaria-Wistoria/MoiTrans.git
    cd moi-translator
    ```
 
